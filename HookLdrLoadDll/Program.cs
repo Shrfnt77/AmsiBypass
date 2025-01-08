@@ -36,7 +36,6 @@ namespace HookLdrLoadLib
             var asm = Assembly.Load(bytes);
             Console.WriteLine("Loaded -> {0}", asm.FullName);
 
-            //shout out to makaveli
         }
 
         static void HookLdrLoadDll() 
@@ -143,44 +142,45 @@ namespace HookLdrLoadLib
         }
     }
     internal class Native 
-{
+    {
 
-        internal const uint ReadWrite = 0x04;
+            internal const uint ReadWrite = 0x04;
 
-        public static uint NtStatusAccessDenied = 0xC0000022;
+            public static uint NtStatusAccessDenied = 0xC0000022;
 
-        [DllImport("kernel32.dll")]
-       internal static extern bool VirtualProtect(IntPtr lpAddress,
-   int dwSize, uint flNewProtect, out uint lpflOldProtect);
+            [DllImport("kernel32.dll")]
+           internal static extern bool VirtualProtect(IntPtr lpAddress,
+       int dwSize, uint flNewProtect, out uint lpflOldProtect);
 
-        [DllImport("kernel32")]
-        internal static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+            [DllImport("kernel32")]
+            internal static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
-        [DllImport("kernel32")]
-        internal static extern IntPtr LoadLibrary(string lpFileName);
-        [DllImport("ntdll.dll", CharSet = CharSet.Unicode)]
-        public static extern uint LdrLoadDll(
-            IntPtr SearchPath,IntPtr DllCharacteristics,
-            ref UnicodeString DllName,
-            out IntPtr BaseAddress);
+            [DllImport("kernel32")]
+            internal static extern IntPtr LoadLibrary(string lpFileName);
+            [DllImport("ntdll.dll", CharSet = CharSet.Unicode)]
+            public static extern uint LdrLoadDll(
+                IntPtr SearchPath,IntPtr DllCharacteristics,
+                ref UnicodeString DllName,
+                out IntPtr BaseAddress);
 
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        internal struct UnicodeString
-        {
-            public ushort Length;          
-            public ushort MaximumLength;   
-            public IntPtr Buffer;          
-            public UnicodeString(string s)
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+            internal struct UnicodeString
             {
-                Length = (ushort)(s.Length * 2);
-                MaximumLength = (ushort)((s.Length + 1) * 2); // +1 for null terminator
-                Buffer = Marshal.StringToHGlobalUni(s);       
+                public ushort Length;          
+                public ushort MaximumLength;   
+                public IntPtr Buffer;          
+                public UnicodeString(string s)
+                {
+                    Length = (ushort)(s.Length * 2);
+                    MaximumLength = (ushort)((s.Length + 1) * 2); // +1 for null terminator
+                    Buffer = Marshal.StringToHGlobalUni(s);       
+                }
+
+                public override string ToString()
+                {
+                    return Marshal.PtrToStringUni(Buffer, Length / 2);            
             }
-
-            public override string ToString()
-            {
-                return Marshal.PtrToStringUni(Buffer, Length / 2);            }
         }
     }
 }
